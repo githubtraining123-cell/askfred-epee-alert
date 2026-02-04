@@ -21,7 +21,7 @@ SEEN_FILE = "seen_tournaments.json"
 
 EMAIL_TO = [
     "mshwetha694@gmail.com",
-    "m.s.shwetha@gmail.com"
+    "hemanth.brindavan@gmail.com"
 ]
 
 SMTP_SERVER = "smtp.gmail.com"
@@ -84,12 +84,12 @@ def main():
     today = datetime.now().strftime("%Y-%m-%d")
 
     if new_events:
-        body = "New Épée tournaments found:\n\n"
+        body = "Automated email. New Épée tournaments found:\n\n"
         for t, l in new_events:
             body += f"- {t.title()}\n  {l}\n\n"
         subject = f"🗡️ New Épée Tournaments Found ({today})"
     else:
-        body = "No new Épée tournaments matching your criteria were found today."
+        body = "Automated email. No new Épée tournaments matching your criteria were found today."
         subject = f"ℹ️ No New Épée Tournaments ({today})"
 
     send_email(subject, body)
