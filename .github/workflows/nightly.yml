@@ -1,0 +1,38 @@
+name: Nightly AskFRED Épée Check
+
+on:
+  schedule:
+    - cron: "0 5 * * *"  # Midnight Central Time
+  workflow_dispatch:
+
+jobs:
+  check-tournaments:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run tournament checker
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: |
+          python askfred_epee_alert.py
+
+      - name: Commit updated state
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add seen_tournaments.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update seen tournaments"
+          git push
