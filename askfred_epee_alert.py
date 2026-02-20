@@ -37,21 +37,41 @@ def save_seen(seen):
         json.dump(list(seen), f, indent=2)
 
 def fetch_tournaments():
-    r = requests.get(SEARCH_URL, timeout=20)
+    r = requests.get(SEARCH_URL, timeout=30)
     soup = BeautifulSoup(r.text, "html.parser")
 
     results = []
-    for link in soup.select("a.tournament-link"):
-        title = link.get_text(strip=True).lower()
-        href = "https://www.askfred.net" + link["href"]
 
-        if "epee" not in title:
+    # Find blocks that include a tournament name
+    for header in soup.find_all("h3"):
+        text = header.get_text(strip=True).lower()
+
+        # Only keep Epee
+        if "epee" not in text:
             continue
 
-        if not any(k in title for k in KEYWORDS):
+        # Only USA events (AskFRED search gives all countries but many are in USA)
+        # If you want exact country filter, you can refine later.
+        
+        # Age & gender filtering
+        if not any([
+            "y14" in text,
+            "cadet" in text,
+            "junior" in text,
+        ]):
             continue
 
-        results.append((title, href))
+        # Optional gender rule: women or mixed
+        if not ("women" in text or "mixed" in text):
+            continue
+
+        # Find the link element immediately following the header
+        link_tag = header.find_next("a")
+        if not link_tag or not link_tag.get("href"):
+            continue
+
+        url = "https://www.askfred.net" + link_tag["href"]
+        results.append((text, url))
 
     return results
 
