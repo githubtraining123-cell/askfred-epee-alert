@@ -37,33 +37,38 @@ def save_seen(seen):
         json.dump(list(seen), f, indent=2)
 
 def fetch_tournaments():
-    api_url = "https://www.askfred.net/api/tournaments"
+    url = "https://www.askfred.net/tournaments"
 
     params = {
         "weapon": "Epee",
-        "page": 1
+        "date_by": "on"
     }
 
-    r = requests.get(api_url, params=params, timeout=30)
-    data = r.json()
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
 
-    results = []
+    r = requests.get(url, params=params, headers=headers, timeout=30)
 
-    for t in data.get("tournaments", []):
-        name = t.get("name", "").lower()
-        url = "https://www.askfred.net" + t.get("url", "")
+    if r.status_code != 200:
+        print("Failed to fetch page:", r.status_code)
+        return []
 
-        # Age filter
-        if not any(age in name for age in ["y14", "cadet", "junior"]):
-            continue
+    soup = BeautifulSoup(r.text, "html.parser")
 
-        # Gender filter
-        if not ("women" in name or "mixed" in name):
-            continue
+    tournaments = []
 
-        results.append((name, url))
+    # AskFRED tournaments appear in table rows
+    rows = soup.find_all("tr")
 
-    return results
+    for row in rows:
+        link = row.find("a", href=True)
+        if link and "/tournaments/" in link["href"]:
+            name = link.get_text(strip=True)
+            full_url = "https://www.askfred.net" + link["href"]
+            tournaments.append((name, full_url))
+
+    return tournaments
     
 def send_email(subject, body):
     msg = EmailMessage()
