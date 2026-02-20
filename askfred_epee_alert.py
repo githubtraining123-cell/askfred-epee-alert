@@ -44,34 +44,43 @@ def fetch_tournaments():
 
     today = datetime.today().strftime("%m/%d/%Y")  # MM/DD/YYYY
 
-    params = {
-        "weapon": "Epee",
-        "gender": "Women or Mixed",
-        "date_by": "on",
-        "date": today
-    }
-
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Accept-Language": "en-US,en;q=0.9"
     }
 
-    r = requests.get(search_url, params=params, headers=headers, timeout=30)
-    if r.status_code != 200:
-        print("Failed to fetch page:", r.status_code)
-        return []
-
-    soup = BeautifulSoup(r.text, "html.parser")
-
+    age_categories = ["Y14", "Cadet", "Junior"]
     tournaments = []
-    rows = soup.find_all("tr")
 
-    for row in rows:
-        link = row.find("a", href=True)
-        if link and "/tournaments/" in link["href"]:
-            name = link.get_text(strip=True)
-            full_url = base_url + link["href"]
-            tournaments.append((name, full_url))
+    seen_urls = set()  # to avoid duplicates if same tournament appears under multiple ages
+
+    for age in age_categories:
+        params = {
+            "weapon": "Epee",
+            "gender": "Women or Mixed",
+            "age": age,
+            "date_by": "on",
+            "date": today
+        }
+
+        r = requests.get(search_url, params=params, headers=headers, timeout=30)
+        if r.status_code != 200:
+            print(f"Failed to fetch page for age {age}: {r.status_code}")
+            continue
+
+        soup = BeautifulSoup(r.text, "html.parser")
+        rows = soup.find_all("tr")
+
+        for row in rows:
+            link = row.find("a", href=True)
+            if link and "/tournaments/" in link["href"]:
+                name = link.get_text(strip=True)
+                full_url = base_url + link["href"]
+
+                # avoid duplicates
+                if full_url not in seen_urls:
+                    tournaments.append((name, full_url))
+                    seen_urls.add(full_url)
 
     return tournaments
     
