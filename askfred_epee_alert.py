@@ -5,6 +5,8 @@ import smtplib
 from email.message import EmailMessage
 from datetime import datetime
 import os
+from datetime import datetime
+
 
 SEARCH_URL = "https://www.askfred.net/tournaments"
 
@@ -40,10 +42,13 @@ def fetch_tournaments():
     base_url = "https://www.askfred.net"
     search_url = f"{base_url}/tournaments"
 
+    today = datetime.today().strftime("%m/%d/%Y")  # MM/DD/YYYY
+
     params = {
         "weapon": "Epee",
         "gender": "Women or Mixed",
-        "date_by": "on"
+        "date_by": "on",
+        "date": today
     }
 
     headers = {
@@ -52,7 +57,6 @@ def fetch_tournaments():
     }
 
     r = requests.get(search_url, params=params, headers=headers, timeout=30)
-
     if r.status_code != 200:
         print("Failed to fetch page:", r.status_code)
         return []
@@ -64,7 +68,6 @@ def fetch_tournaments():
 
     for row in rows:
         link = row.find("a", href=True)
-
         if link and "/tournaments/" in link["href"]:
             name = link.get_text(strip=True)
             full_url = base_url + link["href"]
