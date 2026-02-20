@@ -45,7 +45,8 @@ def fetch_tournaments():
     }
 
     headers = {
-        "User-Agent": "Mozilla/5.0"
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "en-US,en;q=0.9"
     }
 
     r = requests.get(url, params=params, headers=headers, timeout=30)
@@ -58,15 +59,27 @@ def fetch_tournaments():
 
     tournaments = []
 
-    # AskFRED tournaments appear in table rows
     rows = soup.find_all("tr")
 
     for row in rows:
         link = row.find("a", href=True)
+
         if link and "/tournaments/" in link["href"]:
             name = link.get_text(strip=True)
             full_url = "https://www.askfred.net" + link["href"]
-            tournaments.append((name, full_url))
+
+            name_lower = name.lower()
+
+            # Gender filter logic
+            if (
+                "women or mixed" in name_lower
+                or "mixed" in name_lower
+                or (
+                    "women" in name_lower
+                    and "men" not in name_lower
+                )
+            ):
+                tournaments.append((name, full_url))
 
     return tournaments
     
