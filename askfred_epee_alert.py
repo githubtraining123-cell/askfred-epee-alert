@@ -37,44 +37,34 @@ def save_seen(seen):
         json.dump(list(seen), f, indent=2)
 
 def fetch_tournaments():
-    r = requests.get(SEARCH_URL, timeout=30)
-    soup = BeautifulSoup(r.text, "html.parser")
+    api_url = "https://www.askfred.net/api/tournaments"
+
+    params = {
+        "weapon": "Epee",
+        "page": 1
+    }
+
+    r = requests.get(api_url, params=params, timeout=30)
+    data = r.json()
 
     results = []
 
-    # Find blocks that include a tournament name
-    for header in soup.find_all("h3"):
-        text = header.get_text(strip=True).lower()
+    for t in data.get("tournaments", []):
+        name = t.get("name", "").lower()
+        url = "https://www.askfred.net" + t.get("url", "")
 
-        # Only keep Epee
-        if "epee" not in text:
+        # Age filter
+        if not any(age in name for age in ["y14", "cadet", "junior"]):
             continue
 
-        # Only USA events (AskFRED search gives all countries but many are in USA)
-        # If you want exact country filter, you can refine later.
-        
-        # Age & gender filtering
-        if not any([
-            "y14" in text,
-            "cadet" in text,
-            "junior" in text,
-        ]):
+        # Gender filter
+        if not ("women" in name or "mixed" in name):
             continue
 
-        # Optional gender rule: women or mixed
-        if not ("women" in text or "mixed" in text):
-            continue
-
-        # Find the link element immediately following the header
-        link_tag = header.find_next("a")
-        if not link_tag or not link_tag.get("href"):
-            continue
-
-        url = "https://www.askfred.net" + link_tag["href"]
-        results.append((text, url))
+        results.append((name, url))
 
     return results
-
+    
 def send_email(subject, body):
     msg = EmailMessage()
     msg["Subject"] = subject
