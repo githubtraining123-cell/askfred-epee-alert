@@ -37,10 +37,12 @@ def save_seen(seen):
         json.dump(list(seen), f, indent=2)
 
 def fetch_tournaments():
-    url = "https://www.askfred.net/tournaments"
+    base_url = "https://www.askfred.net"
+    search_url = f"{base_url}/tournaments"
 
     params = {
         "weapon": "Epee",
+        "gender": "Women or Mixed",
         "date_by": "on"
     }
 
@@ -49,7 +51,7 @@ def fetch_tournaments():
         "Accept-Language": "en-US,en;q=0.9"
     }
 
-    r = requests.get(url, params=params, headers=headers, timeout=30)
+    r = requests.get(search_url, params=params, headers=headers, timeout=30)
 
     if r.status_code != 200:
         print("Failed to fetch page:", r.status_code)
@@ -58,7 +60,6 @@ def fetch_tournaments():
     soup = BeautifulSoup(r.text, "html.parser")
 
     tournaments = []
-
     rows = soup.find_all("tr")
 
     for row in rows:
@@ -66,20 +67,8 @@ def fetch_tournaments():
 
         if link and "/tournaments/" in link["href"]:
             name = link.get_text(strip=True)
-            full_url = "https://www.askfred.net" + link["href"]
-
-            name_lower = name.lower()
-
-            # Gender filter logic
-            if (
-                "women or mixed" in name_lower
-                or "mixed" in name_lower
-                or (
-                    "women" in name_lower
-                    and "men" not in name_lower
-                )
-            ):
-                tournaments.append((name, full_url))
+            full_url = base_url + link["href"]
+            tournaments.append((name, full_url))
 
     return tournaments
     
