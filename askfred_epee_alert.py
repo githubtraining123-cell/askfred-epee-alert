@@ -8,20 +8,16 @@ import os
 
 SEARCH_URL = "https://www.askfred.net/tournaments"
 
+
+
 KEYWORDS = [
-    "epee", "épée",
-    "y14", "y-14",
-    "cadet",
-    "junior",
-    "and younger",
-    "women", "mixed"
+    "epee"
 ]
 
 SEEN_FILE = "seen_tournaments.json"
 
 EMAIL_TO = [
-    "mshwetha694@gmail.com",
-    "hemanth.brindavan@gmail.com"
+    "mshwetha694@gmail.com"
 ]
 
 SMTP_SERVER = "smtp.gmail.com"
