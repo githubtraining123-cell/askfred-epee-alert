@@ -20,8 +20,8 @@ SEEN_FILE = "seen_tournaments.json"
 
 EMAIL_TO = [
     "mshwetha694@gmail.com",
-    hemanth.brindavan@gmail.com,
-    vybrindavan@gmail.com
+    "hemanth.brindavan@gmail.com",
+    "vybrindavan@gmail.com"
 ]
 
 SMTP_SERVER = "smtp.gmail.com"
